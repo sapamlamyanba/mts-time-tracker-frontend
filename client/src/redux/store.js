@@ -12,14 +12,3 @@ export default configureStore({
   },
 })
 
-
-// const rootReducer = combineReducers({
-//   alerts: alertSlice,
-//   app: appSlice,
-// });
-
-// const store = configureStore({
-//   reducer: rootReducer,
-// });
-
-// export default store;

@@ -9,6 +9,7 @@ export default function ProtectedRoute({ children }) {
   const dispatch = useDispatch()
   const { user } = useSelector(state => state.user)
 
+  useEffect(() => {
   const getUser = async () => {
     try {
       dispatch(showLoading())
@@ -29,11 +30,11 @@ export default function ProtectedRoute({ children }) {
       console.log(error)
     }
   }
-  useEffect(() => {
+ 
     if (!user) {
       getUser();
     }
-  }, [user, getUser])
+  }, [user, dispatch])
 
   if (localStorage.getItem('token')) {
     return children
