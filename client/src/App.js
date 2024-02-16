@@ -14,7 +14,7 @@ import Project from './admin/Project';
 import Profile from './pages/Profile';
 import ProjectDetails from './admin/ProjectDetails';
 import AdminTimesheets from './admin/AdminTimesheets';
-import ResetPassword from './pages/ResetPassword';
+import ForgotPassword from './auth/ForgotPassword';
 
 function App() {
   const { loading } = useSelector(state => state.alerts)
@@ -64,14 +64,7 @@ function App() {
               </ProtectedRoute>
 
             } />
-             <Route path="/resetPassword" element={
-              <ProtectedRoute>
-                <ResetPassword />
-              </ProtectedRoute>
-
-            } />
-
-
+           
             <Route path="/project/:projectId" element={<ProjectDetails />} />
 
             <Route path="/" element={
@@ -79,7 +72,16 @@ function App() {
                 <SignIn />
               </PublicRoute>
             } />
+
+
+            <Route path="/forgotResetPassword" element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            } />
           </Routes>
+
+
         )
         }
       </BrowserRouter>
