@@ -20,8 +20,11 @@ export default function ProtectedRoute({ children }) {
           }
         })
      
-      if (res.data.success) {
+      if (res.data.success)
+     {
+      // console.log('Chekcingldkjfdslkjfdslj',res) 
         dispatch(setUser(res.data.data))
+
       } else {
         <Navigate to='/' />
       }

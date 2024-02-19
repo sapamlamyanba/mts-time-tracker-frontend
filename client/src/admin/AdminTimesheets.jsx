@@ -50,6 +50,7 @@ function AdminTimesheets() {
       };
       const response = await fetch(`http://localhost:8000/api/admin/getUser/${userId}`, requestOptions);
       const result = await response.json();
+      // console.log(result.data)
       setUserData(result.data);
     } catch (error) {
       console.error('Error fetching user data:', error);

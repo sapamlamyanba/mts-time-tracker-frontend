@@ -22,6 +22,7 @@ export default function AppbarComponent() {
   const [currentWeek, setCurrentWeek] = React.useState(new Date());
   const [tasks, setTasks] = React.useState([]);
   const { user } = useSelector((state) => state.user);
+  const token = localStorage.getItem('token');
 
 
 
@@ -33,7 +34,15 @@ export default function AppbarComponent() {
       setSelectedTask('');
       setMenuOpen(false);
       try {
-        const response = await fetch(`http://localhost:8000/api/admin/getTask/${option.id}`);
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`);
+      const requestOptions = {
+        method: "GET",
+        headers:myHeaders,
+        redirect: "follow"
+      };
+      console.log('checkOption',option.id)
+        const response = await fetch(`http://localhost:8000/api/admin/getTask/${option.id}`,requestOptions);
         if (!response.ok) {
           throw new Error('Failed to fetch tasks for the selected project');
         }
@@ -114,7 +123,7 @@ export default function AppbarComponent() {
     const fetchProjectData = async () => {
       try {
         const myHeaders = new Headers();
-
+        myHeaders.append("Authorization", `Bearer ${token}`)
         const requestOptions = {
           method: 'GET',
           headers: myHeaders,
@@ -124,7 +133,7 @@ export default function AppbarComponent() {
         const response = await fetch("http://localhost:8000/api/admin/getProject", requestOptions);
         const result = await response.json();
         const finalData = result.projects;
-        const projects = finalData.map((project) => ({
+        const projects = finalData?.map((project) => ({
           id: project._id,
           projectName: project.projectName,
         }));
@@ -155,7 +164,7 @@ export default function AppbarComponent() {
     }
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-
+    myHeaders.append("Authorization", `Bearer ${token}`);
     try {
       const userid = user._id;
       const timesheetEntries = [];
@@ -208,6 +217,7 @@ export default function AppbarComponent() {
       newWeek.setDate(newWeek.getDate() - 7);
     }
     setCurrentWeek(newWeek);
+    
   };
 
 
@@ -237,7 +247,7 @@ export default function AppbarComponent() {
                     <MenuItem value="" disabled>
                       Project
                     </MenuItem>
-                    {project.map((option, index) => (
+                    {project?.map((option, index) => (
                       <MenuItem key={index} value={option.projectName} onClick={() => handleMenuItemClick1(option, 'projectName')}>
                         {option.projectName}
                       </MenuItem>

@@ -117,7 +117,7 @@ export default function Sidenav() {
                   >
                     <InboxIcon />
                   </ListItemIcon>
-                  <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color:'#F6FCFC' }} />
+                  <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>
@@ -202,6 +202,36 @@ export default function Sidenav() {
                     <InboxIcon />
                   </ListItemIcon>
                   <ListItemText primary='Project' sx={{ opacity: open ? 1 : 0,color:'black' }} />
+                </ListItemButton>
+                </NavLink>
+              </ListItem>
+              <ListItem disablePadding sx={{ display: 'block' }} >
+              <NavLink
+                  to="/account"
+                  style={{ textDecoration: 'none'}}
+                  // activeStyle={{ backgroundColor: theme.palette.action.selected }}
+                >
+                <ListItemButton
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                    backgroundColor: location.pathname === '/account' ? theme.palette.action.selected : 'transparent',
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : 'auto',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <InboxIcon />
+                  </ListItemIcon>
+                  <ListItemText primary='Account' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>

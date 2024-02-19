@@ -69,6 +69,7 @@ export default function SignIn() {
         .then(result => {
           console.log(result)
           if (result.success) {
+            alert('Successfully')
             localStorage.setItem('token', result.token);
             navigate('/dashboard')
           } else {

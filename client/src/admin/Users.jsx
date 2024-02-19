@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal, TextField } from '@mui/material'
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal, TextField, MenuItem } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
@@ -10,8 +10,10 @@ function User() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    account: '',
     password: '',
   });
+  const [accountOptions, setAccountOptions] = useState([]);
 
   const token = localStorage.getItem('token');
   useEffect(() => {
@@ -60,11 +62,39 @@ function User() {
       };
       fetch('http://localhost:8000/api/user/signup', requestOptions)
       alert('User created Successfully')
+      
       handleClose();
     } catch (error) {
       console.error('Error:', error);
     }
   };
+
+  useEffect(() => {
+    const getAllAccount = async () => {
+      try {
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`)
+
+        const requestOptions = {
+          method: 'GET',
+          headers: myHeaders,
+          redirect: 'follow'
+        };
+        const response = await fetch("http://localhost:8000/api/admin/getAccount", requestOptions);
+        const result = await response.json();
+        const finalData = result.accounts;
+        setAccountOptions(finalData);
+        console.log('check..........', finalData)
+
+
+
+      } catch (error) {
+        console.error('Error fetching timesheet data:', error);
+      }
+    };
+
+    getAllAccount();
+  }, []);
 
   const handleDelete = () => {
 
@@ -87,8 +117,22 @@ function User() {
               <h2>Create User</h2>
               <TextField name="username" label="Username" variant="outlined" value={formData.username} onChange={handleChange} fullWidth margin="normal" />
               <TextField name="email" label="Email" variant="outlined" value={formData.email} onChange={handleChange} fullWidth margin="normal" />
-
-              <TextField name="password" label="Password" variant="outlined" value={formData.password} onChange={handleChange} fullWidth margin="normal" />
+              <TextField
+                select
+                name="account"
+                label="Account"
+                variant="outlined"
+                value={formData.account}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              >
+                {accountOptions.map((option) => (
+                  < MenuItem key={option._id} value={option._id}>
+                    {option.accountName}
+                  </MenuItem>
+                ))}
+              </TextField>       <TextField name="password" label="Password" variant="outlined" value={formData.password} onChange={handleChange} fullWidth margin="normal" />
               <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth>
                 Submit
               </Button>
@@ -112,13 +156,13 @@ function User() {
                       <TableCell>{data.email}</TableCell>
                       <TableCell>{data.username}</TableCell>
                       <TableCell> {new Date(data.createdAt).toLocaleString()}</TableCell>
-                      <TableCell > <DeleteIcon onClick={handleDelete}
-                        sx={{
-                          '&:hover': {
-                            backgroundColor: '#f0f0f0',
-                            cursor: 'pointer',
-                          },
-                        }} /></TableCell>
+                      <TableCell > <DeleteIcon onClick={() => handleDelete(data._id)} 
+                                                sx={{
+                                                    '&:hover': {
+                                                        backgroundColor: '#f0f0f0',
+                                                        cursor: 'pointer',
+                                                    },
+                                                }} /></TableCell>
 
                     </TableRow>
                   ))}

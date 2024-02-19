@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import ProjectDetails from './admin/ProjectDetails';
 import AdminTimesheets from './admin/AdminTimesheets';
 import ForgotPassword from './auth/ForgotPassword';
+import Account from './admin/Account';
 
 function App() {
   const { loading } = useSelector(state => state.alerts)
@@ -55,17 +56,25 @@ function App() {
               <ProtectedRoute>
                 <Project />
               </ProtectedRoute>
-
             } />
+              <Route
+               path="/project/:projectId"
+               element={                
+               <ProjectDetails />
+               } />
 
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
-
+            } />
+            <Route path="/account" element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
             } />
            
-            <Route path="/project/:projectId" element={<ProjectDetails />} />
+          
 
             <Route path="/" element={
               <PublicRoute>

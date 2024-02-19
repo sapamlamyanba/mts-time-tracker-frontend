@@ -18,14 +18,16 @@ function Timesheet() {
   const [itemsPerPage] = useState(7);
   const [currentPageItems, setCurrentPageItems] = useState([]);
   const [timesheets, setTimesheets] = useState([]);
-  const { user } = useSelector(state => state.user)
+  const { user } = useSelector(state => state.user)  
   const [hours, setHours] = useState('');
 
   const token = localStorage.getItem('token');
+ 
   useEffect(() => {
     const fetchTimesheetData = async () => {
       try {
         const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
@@ -33,10 +35,10 @@ function Timesheet() {
           headers: myHeaders,
           redirect: 'follow'
         };
-
-        const response = await fetch("http://localhost:8000/api/user/getTimesheet/", requestOptions);
+        const response = await fetch(`http://localhost:8000/api/user/getTimesheet`, requestOptions);
         const result = await response.json();
         const finalData = result.data;
+        console.log('chekckkk', result)
         setTimesheets(finalData)
       } catch (error) {
         console.error('Error fetching timesheet data:', error);
@@ -47,10 +49,10 @@ function Timesheet() {
 
 
   useEffect(() => {
-
+    
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = timesheets.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = timesheets?.slice(indexOfFirstItem, indexOfLastItem);
     setCurrentPageItems(currentItems);
   }, [timesheets, currentPage, itemsPerPage]);
 
@@ -71,7 +73,7 @@ function Timesheet() {
       const response = await fetch(`http://localhost:8000/api/user/updateTimesheet/${id}`, requestOptions);
       if (response.ok) {
         setTimesheets(prevTimesheets => {
-          const updatedTimesheets = prevTimesheets.map(timesheet => {
+          const updatedTimesheets = prevTimesheets?.map(timesheet => {
             if (timesheet._id === id) {
               return { ...timesheet, status: status, hours: hours };
             }
@@ -89,7 +91,7 @@ function Timesheet() {
   };
 
   const handleHourChange = (id, value) => {
-    const updatedTimesheets = timesheets.map(timesheet => {
+    const updatedTimesheets = timesheets?.map(timesheet => {
       if (timesheet._id === id) {
         return { ...timesheet, hours: value };
       }
@@ -127,7 +129,7 @@ function Timesheet() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentPageItems.map((row, index) => (
+                    {currentPageItems?.map((row, index) => (
 
                       <TableRow key={row._id}>
                         <TableCell>
@@ -145,7 +147,7 @@ function Timesheet() {
                             <input
                               style={{ width: '30px' }}
                               type="text"
-                              value={row.hours}
+                              value={row.hours || ''}
                               onChange={(e) => handleHourChange(row._id, e.target.value)}
                             /></TableCell>
                         )}
@@ -179,7 +181,7 @@ function Timesheet() {
               <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <Button disabled={currentPage === 1} onClick={() => paginate(currentPage - 1)}>Previous</Button>
                 <span style={{ margin: '0 10px' }}>{currentPage}</span>
-                <Button disabled={currentPageItems.length < itemsPerPage} onClick={() => paginate(currentPage + 1)}>Next</Button>
+                <Button disabled={currentPageItems?.length < itemsPerPage} onClick={() => paginate(currentPage + 1)}>Next</Button>
 
               </div>
             </div>

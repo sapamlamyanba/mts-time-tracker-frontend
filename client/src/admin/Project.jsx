@@ -2,20 +2,21 @@ import { Box, Button, Modal, Paper, Table, TableBody, TableCell, TableContainer,
 import React, { useEffect, useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 
 function Project() {
   const [open, setOpen] = useState(false);
   const [project, setProject] = useState([])
+  const token = localStorage.getItem('token');
 
   const [formData, setFormData] = useState({
     projectName: '',
-    projectDescription: ''
-
+    projectDescription: '',
   });
   const navigate = useNavigate();
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -30,8 +31,8 @@ function Project() {
   const handleSubmit = async () => {
     try {
       const myHeaders = new Headers();
-      myHeaders.append('Content-Type', 'application/json');
-
+      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Authorization", `Bearer ${token}`);
       const requestOptions = {
         method: 'POST',
         headers: myHeaders,
@@ -40,6 +41,7 @@ function Project() {
       };
       fetch('http://localhost:8000/api/admin/createProject', requestOptions)
       alert('Project created Successfully')
+      window.location.reload()
       handleClose();
     } catch (error) {
       console.error('Error:', error);
@@ -50,14 +52,13 @@ function Project() {
     const getAllProjects = async () => {
       try {
         const myHeaders = new Headers();
-
+        myHeaders.append("Authorization", `Bearer ${token}`)
 
         const requestOptions = {
           method: 'GET',
           headers: myHeaders,
           redirect: 'follow'
         };
-
         const response = await fetch("http://localhost:8000/api/admin/getProject", requestOptions);
         const result = await response.json();
         const finalData = result.projects;
@@ -78,9 +79,30 @@ function Project() {
 
   }
 
-  const handleDelete=()=> {
-
+  const handleDelete = (projectId) => {
+    try {
+      const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`);
+      const requestOptions = {
+        method: "DELETE",
+        headers:myHeaders,
+        redirect: "follow"
+      };
+      fetch(`http://localhost:8000/api/admin/deleteProject/${projectId}`, requestOptions)
+        .then((response) => response.text())
+        .then((result) => {
+          alert('Delete Successful');
+          console.log(result);
+          // Optionally, update the project state after deletion
+          const updatedProjects = project.filter((data) => data._id !== projectId);
+          setProject(updatedProjects);
+        })
+        .catch((error) => console.error(error))
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
+  
   return (
     <>
       <Navbar />
@@ -117,19 +139,19 @@ function Project() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {project.map((data, index) => (
+                  {project?.map((data, index) => (
                     <TableRow key={data._id}>
                       <TableCell onClick={() => handleClickProject(data._id)}>{data.projectName}</TableCell>
 
                       <TableCell>{data.projectDescription}</TableCell>
                       <TableCell> {new Date(data.createdAt).toLocaleString()}</TableCell>
-                      <TableCell > <DeleteIcon onClick={handleDelete}
-                      sx={{
-                        '&:hover': {
-                          backgroundColor: '#f0f0f0', 
-                          cursor: 'pointer',
-                        },
-                      }}/></TableCell>
+                      <TableCell > <DeleteIcon onClick={() => handleDelete(data._id)}
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: '#f0f0f0',
+                            cursor: 'pointer',
+                          },
+                        }} /></TableCell>
 
                     </TableRow>
                   ))}
