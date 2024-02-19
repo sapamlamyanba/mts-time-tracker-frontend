@@ -117,7 +117,7 @@ export default function Sidenav() {
                   >
                     <InboxIcon />
                   </ListItemIcon>
-                  <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color:'grey' }} />
+                  <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color:'#F6FCFC' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>
@@ -144,7 +144,7 @@ export default function Sidenav() {
                   >
                     <InboxIcon />
                   </ListItemIcon>
-                  <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0,color:'grey' }} />
+                  <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>
@@ -171,7 +171,7 @@ export default function Sidenav() {
                   >
                     <InboxIcon />
                   </ListItemIcon>
-                  <ListItemText primary='Users' sx={{ opacity: open ? 1 : 0,color:'grey' }} />
+                  <ListItemText primary='Users' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>
@@ -201,7 +201,7 @@ export default function Sidenav() {
                   >
                     <InboxIcon />
                   </ListItemIcon>
-                  <ListItemText primary='Project' sx={{ opacity: open ? 1 : 0,color:'grey' }} />
+                  <ListItemText primary='Project' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                 </ListItemButton>
                 </NavLink>
               </ListItem>
@@ -236,7 +236,7 @@ export default function Sidenav() {
                     >
                       <InboxIcon />
                     </ListItemIcon>
-                    <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color: 'grey' }} />
+                    <ListItemText primary='Timesheet' sx={{ opacity: open ? 1 : 0,color: 'black' }} />
                   </ListItemButton>
                   </NavLink>
                 </ListItem>
@@ -265,7 +265,7 @@ export default function Sidenav() {
                     >
                       <InboxIcon />
                     </ListItemIcon>
-                    <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0,color:'grey' }} />
+                    <ListItemText primary='Reports' sx={{ opacity: open ? 1 : 0,color:'black' }} />
                   </ListItemButton>
                   </NavLink>
                 </ListItem>
@@ -292,7 +292,7 @@ export default function Sidenav() {
                     >
                       <InboxIcon />
                     </ListItemIcon>
-                    <ListItemText primary='Profile' sx={{ opacity: open ? 1 : 0,color: 'grey' }} />
+                    <ListItemText primary='Profile' sx={{ opacity: open ? 1 : 0,color: 'black' }} />
                   </ListItemButton>
                   </NavLink>
                 </ListItem>

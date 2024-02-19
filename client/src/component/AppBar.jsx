@@ -66,22 +66,14 @@ export default function AppbarComponent() {
         newXyz[index] = parseInt(value);
       } else {
         newXyz[index] = null;
-      }
-     
-      // Update the local input value
+      }        
       e.target.value = newXyz[index] || '';
       setSelectedTimes(newXyz);
     };
   
-    const handleBlur = (e, index) => {
-      // Update the state when the input field loses focus
+    const handleBlur = (e, index) => {     
       setSelectedTimes([...selectedTimes]);
     };
-  
-    
-    
-    
-
     return (
       <div style={{
         display: 'flex', flexDirection: 'row', position: 'absolute', marginLeft: '340px',
@@ -101,7 +93,6 @@ export default function AppbarComponent() {
               {date.toLocaleDateString('en-US', { month: 'short' })}
             </div>
             <div>
-
             <input
               id={`xyz[${index}]`}
               type="number"
