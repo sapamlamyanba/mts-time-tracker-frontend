@@ -102,6 +102,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.reload();
+    navigate('/')
   };
 
   const menuId = 'primary-search-account-menu';

@@ -67,8 +67,9 @@ export default function SignIn() {
       fetch("http://localhost:8000/api/user/signIn", requestOptions)
         .then(response => response.json())
         .then(result => {
-          console.log(result)
+          
           if (result.success) {
+            alert('Successfully')
             localStorage.setItem('token', result.token);
             navigate('/dashboard')
           } else {

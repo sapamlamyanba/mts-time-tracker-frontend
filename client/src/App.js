@@ -5,16 +5,17 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Reports from './pages/Reports';
 import Timesheet from './pages/Timesheet';
 import { useSelector } from 'react-redux';
-import Spinner from './component/Spinner';
 import ProtectedRoute from './component/ProtectedRoute';
 import PublicRoute from './component/PublicRoute';
-
 import User from './admin/Users';
 import Project from './admin/Project';
 import Profile from './pages/Profile';
 import ProjectDetails from './admin/ProjectDetails';
 import AdminTimesheets from './admin/AdminTimesheets';
 import ForgotPassword from './auth/ForgotPassword';
+import Account from './admin/Account';
+import ManagerTimesheets from './manager/ManagerTimesheets';
+import { CircularProgress } from '@mui/material';
 
 function App() {
   const { loading } = useSelector(state => state.alerts)
@@ -23,13 +24,20 @@ function App() {
     <>
       <BrowserRouter>
         {loading ? (
-          <Spinner />
+          <CircularProgress />
         ) : (
 
           <Routes>
             <Route path="/admin" element={
               <ProtectedRoute>
                 <AdminTimesheets />
+              </ProtectedRoute>
+
+            } />
+
+            <Route path="/manager" element={
+              <ProtectedRoute>
+                <ManagerTimesheets />
               </ProtectedRoute>
 
             } />
@@ -55,17 +63,25 @@ function App() {
               <ProtectedRoute>
                 <Project />
               </ProtectedRoute>
-
             } />
+            <Route
+              path="/project/:projectId"
+              element={
+                <ProjectDetails />
+              } />
 
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
-
             } />
-           
-            <Route path="/project/:projectId" element={<ProjectDetails />} />
+            <Route path="/account" element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            } />
+
+
 
             <Route path="/" element={
               <PublicRoute>

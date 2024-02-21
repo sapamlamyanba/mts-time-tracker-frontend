@@ -17,13 +17,13 @@ function ProjectDetails() {
         taskDescription: ''
 
     });
-
+    const token = localStorage.getItem('token');
 
     const handleSubmit = async () => {
         try {
             const myHeaders = new Headers();
-            myHeaders.append('Content-Type', 'application/json');
-
+            myHeaders.append("Content-Type", "application/json");
+            myHeaders.append("Authorization", `Bearer ${token}`);
             const requestOptions = {
                 method: 'POST',
                 headers: myHeaders,
@@ -36,6 +36,7 @@ function ProjectDetails() {
             };
             fetch('http://localhost:8000/api/admin/createTask', requestOptions)
             alert('Task created Successfully')
+            window.location.reload();
             handleClose();
         } catch (error) {
             console.error('Error:', error);
@@ -44,7 +45,15 @@ function ProjectDetails() {
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/admin/getProject/${projectId}`);
+                const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+                myHeaders.append("Authorization", `Bearer ${token}`);
+                const requestOptions = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    redirect: 'follow',
+                  };
+                const response = await fetch(`http://localhost:8000/api/admin/getProject/${projectId}`, requestOptions);
                 if (!response.ok) {
                     throw new Error('Failed to fetch project details');
                 }
@@ -64,6 +73,8 @@ function ProjectDetails() {
         const getTask = async () => {
             try {
                 const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+                 myHeaders.append("Authorization", `Bearer ${token}`);
                 const requestOptions = {
                     method: 'GET',
                     headers: myHeaders,
@@ -95,8 +106,29 @@ function ProjectDetails() {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleDelete = () => {
+    const handleDelete = (taskId) => {
+        try {
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Authorization", `Bearer ${token}`);
+            const requestOptions = {
+                method: "DELETE",
+                headers: myHeaders,
+                redirect: "follow"
+            };
+            fetch(`http://localhost:8000/api/admin/deleteTask/${taskId}`, requestOptions)
+                .then((response) => response.text())
 
+                .then((result) => {
+                    alert('Delete Successfull')
+                    const updatedProjects = task.filter((data) => data._id !== taskId);
+                    setTask(updatedProjects);
+                    console.log(result)
+                })
+                .catch((error) => console.error(error))
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
 
@@ -145,10 +177,10 @@ function ProjectDetails() {
                                         <TableRow>
                                             <TableCell >{data.taskName}</TableCell>
                                             <TableCell>{data.taskDescription}</TableCell>
-                                            <TableCell > <DeleteIcon onClick={handleDelete}
+                                            <TableCell > <DeleteIcon onClick={() => handleDelete(data._id)}
                                                 sx={{
                                                     '&:hover': {
-                                                        backgroundColor: '#f0f0f0', 
+                                                        backgroundColor: '#f0f0f0',
                                                         cursor: 'pointer',
                                                     },
                                                 }} /></TableCell>

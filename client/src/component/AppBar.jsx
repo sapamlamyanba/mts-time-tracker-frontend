@@ -22,18 +22,29 @@ export default function AppbarComponent() {
   const [currentWeek, setCurrentWeek] = React.useState(new Date());
   const [tasks, setTasks] = React.useState([]);
   const { user } = useSelector((state) => state.user);
+  const token = localStorage.getItem('token');
+  
 
 
 
 
 
   const handleMenuItemClick1 = async (option, type) => {
+    // console.log(option)
     if (type === 'projectName') {
       setSelectedProject(option.projectName);
       setSelectedTask('');
       setMenuOpen(false);
       try {
-        const response = await fetch(`http://localhost:8000/api/admin/getTask/${option.id}`);
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`);
+      const requestOptions = {
+        method: "GET",
+        headers:myHeaders,
+        redirect: "follow"
+      };
+      // console.log('checkOption',option.id)
+        const response = await fetch(`http://localhost:8000/api/admin/getTask/${option.id}`,requestOptions);
         if (!response.ok) {
           throw new Error('Failed to fetch tasks for the selected project');
         }
@@ -113,18 +124,31 @@ export default function AppbarComponent() {
   React.useEffect(() => {
     const fetchProjectData = async () => {
       try {
+        if (!user || !token) {
+          console.error('User or token is null or undefined');
+          return;
+        }
         const myHeaders = new Headers();
-
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Authorization", `Bearer ${token}`)   
+        const account = user?.account;
+        const raw = JSON.stringify({
+          "account": account
+        });     
         const requestOptions = {
-          method: 'GET',
+          method: 'POST',
+          body: raw,
           headers: myHeaders,
           redirect: 'follow'
         };
 
         const response = await fetch("http://localhost:8000/api/admin/getProject", requestOptions);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
         const result = await response.json();
-        const finalData = result.projects;
-        const projects = finalData.map((project) => ({
+        const finalData = result.projects;               
+        const projects = finalData?.map((project) => ({
           id: project._id,
           projectName: project.projectName,
         }));
@@ -133,8 +157,14 @@ export default function AppbarComponent() {
         console.error('Error fetching timesheet data:', error);
       }
     };
+
+  //   console.log('User:', user);
+  // console.log('Token:', token);
+    
+  if (user) {
     fetchProjectData();
-  }, []);
+  }
+  }, [token, user]);
 
 
   const handleAddButtonClick = async (e) => {
@@ -155,7 +185,7 @@ export default function AppbarComponent() {
     }
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-
+    myHeaders.append("Authorization", `Bearer ${token}`);
     try {
       const userid = user._id;
       const timesheetEntries = [];
@@ -172,7 +202,9 @@ export default function AppbarComponent() {
         };
         timesheetEntries.push(entry);
       }
-      const selectedProjectObj = project.find(p => p.projectName === selectedProject);
+      // const selectedProjectObj = project.find(p => p.projectName === selectedProject);
+      const selectedProjectObj = project.find(p => p.projectName === selectedProject && p.accountId === user.account);
+
       const requestBody = {
         userId: userid,
         timesheetEntries: timesheetEntries,
@@ -208,6 +240,7 @@ export default function AppbarComponent() {
       newWeek.setDate(newWeek.getDate() - 7);
     }
     setCurrentWeek(newWeek);
+    
   };
 
 
@@ -228,7 +261,6 @@ export default function AppbarComponent() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ marginLeft: '60px' }}>Project</span>
                   <Select
-
                     value={selectedProject}
                     onChange={(e) => setSelectedProject(e.target.value)}
                     displayEmpty
@@ -237,8 +269,8 @@ export default function AppbarComponent() {
                     <MenuItem value="" disabled>
                       Project
                     </MenuItem>
-                    {project.map((option, index) => (
-                      <MenuItem key={index} value={option.projectName} onClick={() => handleMenuItemClick1(option, 'projectName')}>
+                    {project?.map((option, index) => (
+                      <MenuItem key={index} value={option.id} onClick={() => handleMenuItemClick1(option, 'projectName')}>
                         {option.projectName}
                       </MenuItem>
                     ))}

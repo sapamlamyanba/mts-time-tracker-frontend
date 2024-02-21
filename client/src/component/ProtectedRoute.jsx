@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
@@ -7,6 +7,7 @@ import { setUser } from '../redux/features/userSlice'
 export default function ProtectedRoute({ children }) {
   const dispatch = useDispatch()
   const { user } = useSelector(state => state.user)
+  const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
   const getUser = async () => {
@@ -20,13 +21,16 @@ export default function ProtectedRoute({ children }) {
           }
         })
      
-      if (res.data.success) {
+      if (res.data.success)
+     {
+      
         dispatch(setUser(res.data.data))
+
       } else {
-        <Navigate to='/' />
+        throw new Error('Failed to fetch user data');
       }
     } catch (error) {
-      console.log(error)
+       console.error('Error fetching user data:', error);
     }
   }
  
@@ -35,10 +39,11 @@ export default function ProtectedRoute({ children }) {
     }
   }, [user, dispatch])
 
-  if (localStorage.getItem('token')) {
-    return children
-  } else {
+  if (!localStorage.getItem('token')) {
     return <Navigate to='/' />
-  }
+   
+  } 
+    return children
+  
 }
 
