@@ -2,6 +2,7 @@ import { Box, Button, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
+import { BASE_URL } from '../config/ipconfig';
 
 function ResetPassword() {
     const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ function ResetPassword() {
       const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-          const response = await fetch('http://localhost:8000/api/password-reset', {
+          const response = await fetch(`${BASE_URL}/password-reset`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ function ResetPassword() {
         try {
           const token = window.location.pathname.split('/').pop(); 
           console.log('token.',token)
-          const response = await fetch(`http://localhost:8000/api/password-reset/${token}`, {
+          const response = await fetch(`${BASE_URL}/password-reset/${token}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

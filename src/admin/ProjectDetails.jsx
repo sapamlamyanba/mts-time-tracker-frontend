@@ -4,6 +4,7 @@ import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
 import { useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { BASE_URL } from '../config/ipconfig';
 
 function ProjectDetails() {
     const { projectId } = useParams();
@@ -17,13 +18,13 @@ function ProjectDetails() {
         taskDescription: ''
 
     });
-
+    const token = localStorage.getItem('token');
 
     const handleSubmit = async () => {
         try {
             const myHeaders = new Headers();
-            myHeaders.append('Content-Type', 'application/json');
-
+            myHeaders.append("Content-Type", "application/json");
+            myHeaders.append("Authorization", `Bearer ${token}`);
             const requestOptions = {
                 method: 'POST',
                 headers: myHeaders,
@@ -34,8 +35,9 @@ function ProjectDetails() {
                 }),
                 redirect: 'follow',
             };
-            fetch('http://localhost:8000/api/admin/createTask', requestOptions)
+            fetch(`${BASE_URL}/admin/createTask`, requestOptions)
             alert('Task created Successfully')
+            window.location.reload();
             handleClose();
         } catch (error) {
             console.error('Error:', error);
@@ -44,7 +46,15 @@ function ProjectDetails() {
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/admin/getProject/${projectId}`);
+                const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+                myHeaders.append("Authorization", `Bearer ${token}`);
+                const requestOptions = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    redirect: 'follow',
+                  };
+                const response = await fetch(`${BASE_URL}/admin/getProject/${projectId}`, requestOptions);
                 if (!response.ok) {
                     throw new Error('Failed to fetch project details');
                 }
@@ -64,13 +74,15 @@ function ProjectDetails() {
         const getTask = async () => {
             try {
                 const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+                 myHeaders.append("Authorization", `Bearer ${token}`);
                 const requestOptions = {
                     method: 'GET',
                     headers: myHeaders,
                     redirect: 'follow'
                 };
 
-                const response = await fetch(`http://localhost:8000/api/admin/getTask/${projectId}`, requestOptions);
+                const response = await fetch(`${BASE_URL}/admin/getTask/${projectId}`, requestOptions);
                 const result = await response.json();
                 const finalData = result.task;
                 setTask(finalData);
@@ -95,8 +107,29 @@ function ProjectDetails() {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleDelete = () => {
+    const handleDelete = (taskId) => {
+        try {
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Authorization", `Bearer ${token}`);
+            const requestOptions = {
+                method: "DELETE",
+                headers: myHeaders,
+                redirect: "follow"
+            };
+            fetch(`${BASE_URL}/admin/deleteTask/${taskId}`, requestOptions)
+                .then((response) => response.text())
 
+                .then((result) => {
+                    alert('Delete Successfull')
+                    const updatedProjects = task.filter((data) => data._id !== taskId);
+                    setTask(updatedProjects);
+                    console.log(result)
+                })
+                .catch((error) => console.error(error))
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
 
@@ -145,10 +178,10 @@ function ProjectDetails() {
                                         <TableRow>
                                             <TableCell >{data.taskName}</TableCell>
                                             <TableCell>{data.taskDescription}</TableCell>
-                                            <TableCell > <DeleteIcon onClick={handleDelete}
+                                            <TableCell > <DeleteIcon onClick={() => handleDelete(data._id)}
                                                 sx={{
                                                     '&:hover': {
-                                                        backgroundColor: '#f0f0f0', 
+                                                        backgroundColor: '#f0f0f0',
                                                         cursor: 'pointer',
                                                     },
                                                 }} /></TableCell>

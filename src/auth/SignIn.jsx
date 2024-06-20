@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom'
+import { Modal } from '@mui/material';
+import { BASE_URL } from '../config/ipconfig';
 
 
 function Copyright(props) {
@@ -29,15 +31,14 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-
-
-
 export default function SignIn() {
-
+  
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
   const navigate = useNavigate();
+  const [open, setOpen] = React.useState(false);
+  // const [email1, setEmail1] = React.useState('')
 
 
 
@@ -61,16 +62,14 @@ export default function SignIn() {
         }),
         redirect: 'follow',
       };
-
-
-
-      fetch("http://localhost:8000/api/user/signIn", requestOptions)
+      fetch(`${BASE_URL}/user/signIn`, requestOptions)
         .then(response => response.json())
-        .then(result => {
-          console.log(result)
-          if (result.success) {
+        .then(result => {   
+          // console.log('result ',result)       
+          if (result.success) {            
             localStorage.setItem('token', result.token);
             navigate('/dashboard')
+            alert('Successfully')
           } else {
             alert('Error in sign in')
           }
@@ -83,6 +82,48 @@ export default function SignIn() {
       setError('An error occurred. Please try again later.');
     }
   };
+
+  const handleEmailSubmit = async (event) => {
+    event.preventDefault();
+   
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: JSON.stringify({
+          email: email
+        })
+      }
+      fetch('http://localhost:8000/api/password-reset', requestOptions)
+        .then((response) => response.json())
+        
+        .then((result) => {if (result) {
+          alert('Successfull')
+          navigate('/forgotResetPassword')
+          localStorage.setItem('resetToken', result.resetToken);
+          
+        } else {
+          
+        }})
+        .catch((error) => console.error(error));
+    
+  }
+
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleChange = (event) => {
+    setEmail(event.target.value);
+  };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -142,9 +183,23 @@ export default function SignIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
+                <Button onClick={handleOpen}>
+                  <Link href="#" variant="body2">
+                    Forgot password?
+                  </Link>
+                </Button>
+                <Modal open={open} onClose={handleClose}>
+                  <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, width: 400 }}>
+                    <h2>Forgot Password</h2>
+
+                    <TextField name="email" label="Email" variant="outlined" value={email} onChange={handleChange} fullWidth margin="normal" />
+
+
+                    <Button onClick={handleEmailSubmit} variant="contained" color="primary" fullWidth>
+                      Submit
+                    </Button>
+                  </Box>
+                </Modal>
               </Grid>
             </Grid>
           </Box>

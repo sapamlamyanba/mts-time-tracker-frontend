@@ -1,8 +1,4 @@
-.no-spin-button::-webkit-inner-spin-button,
-.no-spin-button::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.comment-input::placeholder {
+  font-size: 10px; /* Set the desired font size */
 }
-.no-spin-button {
-  -moz-appearance: textfield;
-}
+

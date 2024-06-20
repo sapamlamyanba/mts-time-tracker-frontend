@@ -1,39 +1,46 @@
 import React, { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { hideLoading, showLoading } from '../redux/features/alertSlice'
 import axios from 'axios'
 import { setUser } from '../redux/features/userSlice'
+import { BASE_URL } from '../config/ipconfig'
 
 export default function ProtectedRoute({ children }) {
   const dispatch = useDispatch()
   const { user } = useSelector(state => state.user)
 
+  useEffect(() => {
   const getUser = async () => {
     try {
-      dispatch(showLoading())
-      const res = await axios.post('http://localhost:8000/api/user/getUserData',
-        { token: localStorage.getItem('token') },
+
+      const token  = localStorage.getItem('token')
+      // console.log('token',token)
+      const res = await axios.post(`${BASE_URL}/user/getUserData`,
+        { token: localStorage.getItem('token'),         
+         },
+
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
-      dispatch(hideLoading())
-      if (res.data.success) {
+     
+      if (res.data.success)
+     {
+      // console.log('Chekcingldkjfdslkjfdslj',res) 
         dispatch(setUser(res.data.data))
+
       } else {
         <Navigate to='/' />
       }
     } catch (error) {
-      console.log(error)
+      
     }
-  }
-  useEffect(() => {
+  } 
     if (!user) {
       getUser();
     }
-  }, [user, getUser])
+  }, [user, dispatch])
 
   if (localStorage.getItem('token')) {
     return children
