@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress } from '@mui/material';
+import { Button } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,70 +7,88 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { BASE_URL } from '../config/ipconfig';
 
 
 function TimesheetComponent() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(7);
-  const [currentPageItems, setCurrentPageItems] = useState([]);
+
   const [timesheets, setTimesheets] = useState([]);
   const [hours, setHours] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const token = localStorage.getItem('token');
+  const [currentStartDate, setCurrentStartDate] = useState('');
+  const [currentEndDate, setCurrentEndDate] = useState('');
+
+
+
+
+  const fetchTimesheets = async (startDate, endDate) => {
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Authorization", `Bearer ${token}`);
+      const raw = JSON.stringify({ startDate, endDate });
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+      };
+      const response = await fetch(`${BASE_URL}/user/paginateTimesheets`, requestOptions);
+      if (!response.ok) {
+        throw new Error('Failed to fetch timesheets');
+      }
+      const data = await response.json();
+      setTimesheets(data);
+
+    } catch (error) {
+      console.error('Error fetching timesheets:', error);
+    }
+  };
+
+  const handleNext = () => {
+    const nextStartDate = new Date(currentEndDate);
+    nextStartDate.setDate(nextStartDate.getDate() + 1);
+    const nextEndDate = new Date(nextStartDate);
+    nextEndDate.setDate(nextEndDate.getDate() + 6);
+    setCurrentStartDate(nextStartDate);
+    setCurrentEndDate(nextEndDate);
+    fetchTimesheets(nextStartDate.toISOString().substring(0, 10), nextEndDate.toISOString().substring(0, 10));
+  };
+
+  const handlePrevious = () => {
+    const previousEndDate = new Date(currentStartDate);
+    previousEndDate.setDate(previousEndDate.getDate() - 1);
+    const previousStartDate = new Date(previousEndDate);
+    previousStartDate.setDate(previousStartDate.getDate() - 6);
+    setCurrentStartDate(previousStartDate);
+    setCurrentEndDate(previousEndDate);
+    fetchTimesheets(previousStartDate.toISOString().substring(0, 10), previousEndDate.toISOString().substring(0, 10));
+  };
 
   useEffect(() => {
-    const fetchTimesheetData = async () => {
-      try {
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", `Bearer ${token}`);
-
-        const requestOptions = {
-          method: 'GET',
-          headers: myHeaders,
-          redirect: 'follow'
-        };
-        const response = await fetch(`http://localhost:8000/api/user/getTimesheet`, requestOptions);
-        if (response.ok) {
-          const result = await response.json();
-
-          setTimesheets(result.data);
-          setLoading(false)
-        } else {
-          console.error('Error fetching timesheet data:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching timesheet data:', error);
-        setError('Failed to fetch timesheet data. Please try again later.');
-        setLoading(false);
-      }
-    };
-    fetchTimesheetData();
+    const currentDate = new Date();
+    const startDate = new Date(currentDate);
+    startDate.setDate(currentDate.getDate() - currentDate.getDay());
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate.setUTCHours(23, 59, 59, 999);
+    setCurrentStartDate(startDate);
+    setCurrentEndDate(endDate);
+    fetchTimesheets(startDate.toISOString().substring(0, 10), endDate.toISOString().substring(0, 10));
   }, [token]);
 
-  useEffect(() => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = timesheets?.slice(indexOfFirstItem, indexOfLastItem);
-    setCurrentPageItems(currentItems);
-  }, [timesheets, currentPage, itemsPerPage]);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const handleHourChange = (id, value) => {
+  const handleHourChange = (id, value, value1) => {
     const updatedTimesheets = timesheets?.map(timesheet => {
       if (timesheet._id === id) {
-        return { ...timesheet, hours: value };
+        return { ...timesheet, hours: value, value1 };
       }
       return timesheet;
     });
     setTimesheets(updatedTimesheets);
     setHours(value);
   };
-
-  const handleUpdate = async (id, status, hours) => {
+  const handleUpdate = async (id, status, hours, value1) => {
     try {
       const requestOptions = {
         method: 'PUT',
@@ -78,16 +96,14 @@ function TimesheetComponent() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ status: status, hours: hours })
+        body: JSON.stringify({ status: status, hours: hours, value1 })
       };
-
-      const response = await fetch(`http://localhost:8000/api/user/updateTimesheet/${id}`, requestOptions);
+      const response = await fetch(`${BASE_URL}/user/updateTimesheet/${id}`, requestOptions);
       if (response.ok) {
-
         setTimesheets(prevTimesheets => {
           return prevTimesheets.map(timesheet => {
             if (timesheet._id === id) {
-              return { ...timesheet, status, hours };
+              return { ...timesheet, status, hours, value1 };
             }
             return timesheet;
           });
@@ -104,73 +120,82 @@ function TimesheetComponent() {
 
   return (
     <>
-      {loading && <CircularProgress />}
-      {error && <p>{error}</p>}
+      <div style={{
+        display: 'flex', justifyContent: 'center',
+        marginTop: '20px', textAlign: 'center', padding: '10px'
+      }}>
+
+        <Button onClick={handlePrevious}>Previous</Button>
+        <h5> {currentStartDate.toString().substring(0, 10)} ----   {currentEndDate.toString().substring(0, 10)}</h5>
+        <Button onClick={handleNext}>Next</Button>
+      </div>
       <TableContainer style={{ backgroundColor: '#F6FCFC' }} component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="caption table">
+        <Table aria-label="caption table">
           <TableHead>
-            <TableRow style={{ backgroundColor: '#EDF3F3' }}>
-              <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>ProjectId</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Task</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Task Summary</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Hours</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
+            <TableRow >
+              <TableCell>Date </TableCell>
+              <TableCell style={{ paddingLeft: '15px' }}>Project</TableCell>
+              <TableCell>Task</TableCell>
+              <TableCell>Hours</TableCell>
+              <TableCell>Comment</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {currentPageItems?.map((row, index) => (
-              <TableRow key={row._id}>
-                <TableCell>
-                  {new Date(row.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>{row.project}</TableCell>
-                <TableCell>{row.task}</TableCell>
-                <TableCell>{row.shortdesc}</TableCell>
-                {row?.status === "Approved" || row?.status === "Submitted" ? (
-                  <TableCell>{row.hours}</TableCell>
-                ) : (
+
+          <TableBody style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {timesheets.filter(row => row.hours > 0).map((row, index) => (
+              <React.Fragment key={row._id}>
+
+                <TableRow style={{ height: '50px' }}>
                   <TableCell>
-                    <input
-                      style={{ width: '30px' }}
-                      type="text"
-                      value={row.hours || ''}
-                      onChange={(e) => handleHourChange(row._id, e.target.value)}
-                    /></TableCell>
-                )}
-                <TableCell>{row.status}</TableCell>
-                <TableCell>
-                  {row.status === "New" && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleUpdate(row._id, 'Submitted', hours)}
-                    >
-                      Update
-                    </Button>
+                    {new Date(row.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell style={{ paddingLeft: '10px' }}>
+                    {row.project}
+                  </TableCell>
+                  <TableCell style={{ paddingLeft: '20px' }}>{row.task}</TableCell>
+                  {row.status === "Approved" ? (
+                    <TableCell>{row.hours}</TableCell>
+                  ) : (
+                    <TableCell>
+                      <input
+                        style={{ width: '30px' }}
+                        type="text"
+                        value={row.hours || ''}
+                        onChange={(e) => handleHourChange(row._id, e.target.value)}
+                      />
+                    </TableCell>
                   )}
-                  {row.status === "Rejected" && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleUpdate(row._id, 'Submitted', hours)}
-                    >
-                      Update
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
+                  <TableCell>{row.comment}</TableCell>
+                  <TableCell>{row.status}</TableCell>
+                  <TableCell>
+                    {row.status === 'rejected' && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleUpdate(row._id, 'Updated', row.hours)}
+                      >
+                        Update
+                      </Button>
+                    )}
+                  </TableCell>
+
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <Button disabled={currentPage === 1} onClick={() => paginate(currentPage - 1)}>Previous</Button>
-        <span style={{ margin: '0 10px' }}>{currentPage}</span>
-        <Button disabled={currentPageItems?.length < itemsPerPage} onClick={() => paginate(currentPage + 1)}>Next</Button>
+      <div style={{ display: 'flex' }}>
+        <h5>From: {currentStartDate.toString().substring(0, 10)} ----  to:  {currentEndDate.toString().substring(0, 10)}</h5>
       </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', textAlign: 'center' }}>
 
+        <button onClick={handlePrevious}>Previous</button>
+
+        <button onClick={handleNext}>Next</button>
+      </div>
     </>
   )
 }

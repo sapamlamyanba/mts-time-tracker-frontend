@@ -2,6 +2,7 @@ import { Avatar, Box, Button, Container, CssBaseline, Link, TextField, ThemeProv
 import React from 'react'
 import {  useNavigate } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { BASE_URL } from '../config/ipconfig';
 
 function Copyright(props) {
   return (
@@ -42,7 +43,7 @@ function ForgotPassword() {
         body: raw,
         redirect: 'follow',
       };
-      fetch(`http://localhost:8000/api/password-reset/${ResetToken}`, requestOptions)
+      fetch(`${BASE_URL}/password-reset/${ResetToken}`, requestOptions)
         .then(response => response.text())
         .then(result => {
          

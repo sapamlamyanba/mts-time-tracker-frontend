@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Box, FormControl, InputLabel, MenuItem, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, FormControlLabel, Checkbox, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { BASE_URL } from '../config/ipconfig';
 
 function AdminTimesheets() {
   const [users, setUsers] = useState([]);
@@ -23,7 +24,7 @@ function AdminTimesheets() {
           headers: myHeaders,
           redirect: 'follow'
         };
-        const response = await fetch("http://localhost:8000/api/admin/getAllUsers", requestOptions);
+        const response = await fetch(`${BASE_URL}/admin/getAllUsers`, requestOptions);
         const result = await response.json();
         const finalData = result.data;       
         setUsers(finalData);
@@ -36,7 +37,7 @@ function AdminTimesheets() {
           fetchUserData(finalData[0]._id);
         }
       } catch (error) {
-        // console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error);
         setError('Failed to fetch data. Please try again later.');
         setLoading(false);
       }
@@ -46,7 +47,6 @@ function AdminTimesheets() {
 
 
   const fetchUserData = async (userId) => {
-    
     try {
       const myHeaders = new Headers();
       myHeaders.append("Authorization", `Bearer ${token}`);
@@ -55,12 +55,12 @@ function AdminTimesheets() {
         headers: myHeaders,
         redirect: 'follow'
       };
-      const response = await fetch(`http://localhost:8000/api/admin/getUser/${userId}`, requestOptions);
+      const response = await fetch(`${BASE_URL}/admin/getUser/${userId}`, requestOptions);
       const result = await response.json();
-      // console.log('checkUser',result.data)
+      // console.log(result.data)
       setUserData(result.data);
     } catch (error) {
-      
+      console.error('Error fetching user data:', error);
     }
   };
 
@@ -78,7 +78,7 @@ function AdminTimesheets() {
         headers: myHeaders,
         redirect: 'follow'
       };
-      const response = await fetch("http://localhost:8000/api/admin/getProject", requestOptions);
+      const response = await fetch(`${BASE_URL}/admin/getProject`, requestOptions);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }   
@@ -87,7 +87,7 @@ function AdminTimesheets() {
       const projectName = finalData ? finalData.projectName : 'Unknown';
       return projectName;
     } catch (error) {
-      // console.error('Error fetching account name:', error);
+      console.error('Error fetching account name:', error);
       return 'Unknown';
     }
   }, [token]);
@@ -100,6 +100,7 @@ function AdminTimesheets() {
 
   const handleApprove = async (id) => {
     try {
+      const currentHash = window.location.hash;
       const requestOptions = {
         method: 'PUT',
         headers: {
@@ -109,10 +110,12 @@ function AdminTimesheets() {
         body: JSON.stringify({ id }) 
       };
 
-      const response = await fetch(`http://localhost:8000/api/user/timesheets/${id}/approve`, requestOptions);
+      const response = await fetch(`${BASE_URL}/user/timesheets/${id}/approve`, requestOptions);
       if (response.ok) {
-        window.location.reload();
-        
+        const timesheetElement = document.getElementById(`timesheet-${id}`);
+      if (timesheetElement) {
+        timesheetElement.classList.add('approved'); 
+      }      
       } else {
        
         console.error('Failed to approve timesheet:', response.statusText);
@@ -134,7 +137,7 @@ function AdminTimesheets() {
         body: JSON.stringify({ id }) 
       };
 
-      const response = await fetch(`http://localhost:8000/api/user/timesheets/${id}/reject`, requestOptions);
+      const response = await fetch(`${BASE_URL}/user/timesheets/${id}/reject`, requestOptions);
       if (response.ok) {
         window.location.reload();
         
@@ -166,6 +169,9 @@ function AdminTimesheets() {
     });
     setCheckedItems(updatedCheckedItems);
   },[userData]);
+
+
+  
   const ErrorMessage = ({ message }) => {
     return (
       <div className="error-message">
@@ -214,6 +220,7 @@ function AdminTimesheets() {
                       checked={isCheckedAll}
                       onChange={handleCheckAllChange}
                     /></TableCell>
+                
                     <TableCell sx={{ fontWeight: 'bold' }}> Action</TableCell>
                   </TableRow>
                 </TableHead>

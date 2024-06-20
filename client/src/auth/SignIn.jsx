@@ -12,6 +12,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@mui/material';
+import { BASE_URL } from '../config/ipconfig';
 
 
 function Copyright(props) {
@@ -30,11 +31,8 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-
-
-
 export default function SignIn() {
-
+  
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
@@ -64,14 +62,14 @@ export default function SignIn() {
         }),
         redirect: 'follow',
       };
-      fetch("http://localhost:8000/api/user/signIn", requestOptions)
+      fetch(`${BASE_URL}/user/signIn`, requestOptions)
         .then(response => response.json())
-        .then(result => {
-          
-          if (result.success) {
-            alert('Successfully')
+        .then(result => {   
+          // console.log('result ',result)       
+          if (result.success) {            
             localStorage.setItem('token', result.token);
             navigate('/dashboard')
+            alert('Successfully')
           } else {
             alert('Error in sign in')
           }

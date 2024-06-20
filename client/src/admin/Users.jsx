@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
 import DeleteIcon from '@mui/icons-material/Delete';
+import { BASE_URL } from '../config/ipconfig';
 
 function User() {
   const [users, setUsers] = useState([])
@@ -29,7 +30,7 @@ function User() {
           headers: myHeaders,
           redirect: 'follow'
         };
-        const response = await fetch("http://localhost:8000/api/admin/getAllUsers", requestOptions);
+        const response = await fetch(`${BASE_URL}/admin/getAllUsers`, requestOptions);
         const result = await response.json();
         const finalData = result.data;
         // console.log(finalData)
@@ -60,7 +61,7 @@ function User() {
         headers: myHeaders,
         redirect: 'follow'
       };
-      const response = await fetch(`http://localhost:8000/api/admin/getAccount/${accountId}`,requestOptions);
+      const response = await fetch(`${BASE_URL}/admin/getAccount/${accountId}`,requestOptions);
      
       const data = await response.json();
       const finalData = data.data ? data.data.accountName : 'Unknown';
@@ -97,7 +98,7 @@ function User() {
         body: JSON.stringify(formData),
         redirect: 'follow',
       };
-      fetch('http://localhost:8000/api/user/signup', requestOptions)
+      fetch(`${BASE_URL}/user/signup`, requestOptions)
       alert('User created Successfully')
       window.location.reload()
       handleClose();
@@ -117,7 +118,7 @@ function User() {
           headers: myHeaders,
           redirect: 'follow'
         };
-        const response = await fetch("http://localhost:8000/api/admin/getAccount", requestOptions);
+        const response = await fetch(`${BASE_URL}/admin/getAccount`, requestOptions);
         const result = await response.json();
         const finalData = result.accounts;
         setAccountOptions(finalData);

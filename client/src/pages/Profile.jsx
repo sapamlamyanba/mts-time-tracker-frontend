@@ -35,7 +35,7 @@ function Profile() {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/change-password', {
+      const response = await fetch('http://localhost:9000/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

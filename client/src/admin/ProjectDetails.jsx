@@ -4,6 +4,7 @@ import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
 import { useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { BASE_URL } from '../config/ipconfig';
 
 function ProjectDetails() {
     const { projectId } = useParams();
@@ -34,7 +35,7 @@ function ProjectDetails() {
                 }),
                 redirect: 'follow',
             };
-            fetch('http://localhost:8000/api/admin/createTask', requestOptions)
+            fetch(`${BASE_URL}/admin/createTask`, requestOptions)
             alert('Task created Successfully')
             window.location.reload();
             handleClose();
@@ -53,7 +54,7 @@ function ProjectDetails() {
                     headers: myHeaders,
                     redirect: 'follow',
                   };
-                const response = await fetch(`http://localhost:8000/api/admin/getProject/${projectId}`, requestOptions);
+                const response = await fetch(`${BASE_URL}/admin/getProject/${projectId}`, requestOptions);
                 if (!response.ok) {
                     throw new Error('Failed to fetch project details');
                 }
@@ -81,7 +82,7 @@ function ProjectDetails() {
                     redirect: 'follow'
                 };
 
-                const response = await fetch(`http://localhost:8000/api/admin/getTask/${projectId}`, requestOptions);
+                const response = await fetch(`${BASE_URL}/admin/getTask/${projectId}`, requestOptions);
                 const result = await response.json();
                 const finalData = result.task;
                 setTask(finalData);
@@ -116,7 +117,7 @@ function ProjectDetails() {
                 headers: myHeaders,
                 redirect: "follow"
             };
-            fetch(`http://localhost:8000/api/admin/deleteTask/${taskId}`, requestOptions)
+            fetch(`${BASE_URL}/admin/deleteTask/${taskId}`, requestOptions)
                 .then((response) => response.text())
 
                 .then((result) => {

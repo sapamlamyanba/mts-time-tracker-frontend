@@ -1,10 +1,11 @@
-import { Box, Button, MenuItem, Modal, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material'
+import { Box, Button, FormControl, InputLabel, MenuItem, Modal, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
 import { useNavigate, useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
+import { BASE_URL } from '../config/ipconfig';
 
 
 function Project() {
@@ -15,14 +16,15 @@ function Project() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([])
   const { user } = useSelector(state => state.user)
-  
-  // console.log('checkAccount', account)
+  const [accounts, setAccounts] = useState([])
+
+
 
 
   const [formData, setFormData] = useState({
     projectName: '',
     projectDescription: '',
-    
+
   });
   const navigate = useNavigate();
 
@@ -38,27 +40,27 @@ function Project() {
     setFormData({ ...formData, [name]: value });
 
   };
- 
+
 
   const handleSubmit = async () => {
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
       myHeaders.append("Authorization", `Bearer ${token}`);
-        if (!selectedUsers) {
-            console.error("No user selected");
-            return;
-        }
-        const account = user.account
-     
-      const requestBody = { ...formData,account };
+      if (!selectedUsers) {
+        console.error("No user selected");
+        return;
+      }
+      const account = formData.account;
+      console.log('checkAccount', account)
+      const requestBody = { ...formData,  account: account };
       const requestOptions = {
         method: 'POST',
         headers: myHeaders,
         body: JSON.stringify(requestBody),
         redirect: 'follow',
       };
-      fetch('http://localhost:8000/api/admin/createProject', requestOptions)
+      fetch(`${BASE_URL}/admin/createProject`, requestOptions)
       alert('Project created Successfully')
       // console.log('check')
       window.location.reload()
@@ -68,12 +70,12 @@ function Project() {
     }
   };
 
- 
+
   useEffect(() => {
     const fetchProjects = async () => {
-     
+
       try {
-       
+
         if (!user || !token) {
           console.error('User or token is null or undefined');
           return;
@@ -82,29 +84,31 @@ function Project() {
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Authorization", `Bearer ${token}`);
         const account = user?.account;
+        console.log('account',account)
         const raw = JSON.stringify({
           "account": account
         });
-        
+
         const requestOptions = {
           method: "POST",
           headers: myHeaders,
           body: raw,
           redirect: "follow"
         };
-        
-        const response = await fetch("http://localhost:8000/api/admin/getProject", requestOptions);
+
+        const response = await fetch(`${BASE_URL}/admin/getProject`, requestOptions);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        const result = await response.json();        
+        const result = await response.json();
         const projects = result.projects
+        console.log('projects',projects)
         const usersWithAccountNames = await Promise.all(projects.map(async (user) => {
           if (user.account) {
             const accountName = await getAccountName(user.account);
             return { ...user, accountName };
           } else {
-            return { ...user, accountName: 'Unknown' }; 
+            return { ...user, accountName: 'Unknown' };
           }
         }));
         setProject(usersWithAccountNames);
@@ -112,19 +116,17 @@ function Project() {
         console.error(error);
       }
     };
-  if(user){
-    
-    fetchProjects();
-  }
-  }, [user, token]); 
-  
-       
+    if (user) {
 
-  const getAccountName = async (accountId) => {
+      fetchProjects();
+    }
+  }, [user, token]);
+
+
+
+  const getAccountName = async () => {
     try {
-      if (!accountId) {
-        return 'Unknown';
-      }
+
       const myHeaders = new Headers();
       myHeaders.append("Authorization", `Bearer ${token}`)
 
@@ -133,15 +135,23 @@ function Project() {
         headers: myHeaders,
         redirect: 'follow'
       };
-      const response = await fetch(`http://localhost:8000/api/admin/getAccount/${accountId}`,requestOptions);
+      const response = await fetch(`${BASE_URL}/admin/getAccount`, requestOptions);
       const data = await response.json();
-      const finalData = data.data ? data.data.accountName : 'Unknown';
-      return finalData;
+      // console.log('data', data)
+      // const finalData = data.data ? data.data.accountName : 'Unknown';
+      const finalData = data
+      console.log('data', finalData.accounts)
+      setAccounts(finalData.accounts)
+      // return finalData;
     } catch (error) {
       console.error('Error fetching account name:', error);
       return 'Unknown';
     }
   };
+  useEffect(() => {
+    getAccountName()
+  }, [])
+
 
   const handleClickProject = (projectId) => {
     navigate(`/project/${projectId}`);
@@ -157,11 +167,11 @@ function Project() {
         headers: myHeaders,
         redirect: "follow"
       };
-      fetch(`http://localhost:8000/api/admin/deleteProject/${projectId}`, requestOptions)
+      fetch(`${BASE_URL}/admin/deleteProject/${projectId}`, requestOptions)
         .then((response) => response.text())
         .then((result) => {
           alert('Delete Successful');
-          
+
           // Optionally, update the project state after deletion
           const updatedProjects = project.filter((data) => data._id !== projectId);
           setProject(updatedProjects);
@@ -191,7 +201,20 @@ function Project() {
 
               <TextField name="projectName" label="ProjectName" variant="outlined" value={formData.projectName} onChange={handleChange} fullWidth margin="normal" />
               <TextField name="projectDescription" label="ProjectDescription" variant="outlined" value={formData.projectDescription} onChange={handleChange} fullWidth margin="normal" />
-             
+              <FormControl fullWidth margin="normal" variant="outlined">
+                <InputLabel id="account-select-label">Account</InputLabel>
+                <Select
+                  labelId="account-select-label"
+                  id="account-select"
+                  value={formData.account}
+                  onChange={(event) => setFormData({ ...formData, account: event.target.value })}
+                  label="Account"
+                >
+                  {accounts.map(account => (
+                    <MenuItem key={account._id} value={account._id}>{account.accountName}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <Button onClick={handleSubmit} variant="contained" color="primary" fullWidth>
                 Submit
               </Button>
@@ -215,7 +238,7 @@ function Project() {
                     <TableRow key={data._id}>
                       <TableCell onClick={() => handleClickProject(data._id)}>{data.projectName}</TableCell>
                       <TableCell>{data.projectDescription}</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>{data.accountName} </TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>{data.account} </TableCell>
                       <TableCell> {new Date(data.createdAt).toLocaleString()}</TableCell>
                       <TableCell > <DeleteIcon onClick={() => handleDelete(data._id)}
                         sx={{

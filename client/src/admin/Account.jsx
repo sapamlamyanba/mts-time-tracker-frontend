@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Sidenav from '../component/Sidenav'
 import Navbar from '../component/Navbar'
 import DeleteIcon from '@mui/icons-material/Delete';
+import { BASE_URL } from '../config/ipconfig';
 
 function Account() {
   const [open, setOpen] = useState(false);
@@ -36,7 +37,8 @@ function Account() {
         body: JSON.stringify(formData),
         redirect: 'follow',
       };
-      fetch('http://localhost:8000/api/admin/createAccount', requestOptions)
+      fetch('http://localhost:9000/api/admin/createAccount', requestOptions)
+      console.log('check Account',requestOptions)
       alert('Account created Successfully')
       window.location.reload()
       handleClose();
@@ -57,10 +59,10 @@ function Account() {
           headers: myHeaders,
           redirect: 'follow'
         };
-        const response = await fetch("http://localhost:8000/api/admin/getAccount", requestOptions);
+        const response = await fetch(`${BASE_URL}/admin/getAccount`, requestOptions);
         const result = await response.json();
         const finalData = result.accounts;
-        // console.log('check..........',result)
+        console.log('check..........',result)
         setAccount(finalData);
 
 
@@ -82,7 +84,7 @@ function Account() {
         headers:myHeaders,
         redirect: "follow"
       };
-      fetch(`http://localhost:8000/api/admin/deleteAccount/${deleteId}`, requestOptions)
+      fetch(`${BASE_URL}/admin/deleteAccount/${deleteId}`, requestOptions)
         .then((response) => response.text())
         .then((result) => {
           alert('Delete Successful');
